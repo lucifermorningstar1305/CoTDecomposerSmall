@@ -116,7 +116,7 @@ if __name__ == "__main__":
     if args.dataset == "hotpot_qa":
         data = load_dataset(args.dataset, 'distractor', split="train")
         new_data = data.filter(filter_yes_no)
-        new_data = new_data.shuffle(seed=42).select(range(1000))
+        new_data = new_data.shuffle(seed=42).select(range(10_000))
         generated_dataset = query_llm(new_data, yes_no=True)
 
         with open("data/"+args.dataset+".json", "w") as fp:
