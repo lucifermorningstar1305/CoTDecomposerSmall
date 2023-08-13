@@ -20,8 +20,7 @@ class LitRAG(pl.LightningModule):
         super().__init__()
 
         ques_model = BertModel.from_pretrained("bert-base-uncased")
-        ques_peft_config = LoraConfig(task_type=TaskType.FEATURE_EXTRACTION, 
-                                      inference_mode=False, r=4, lora_alpha=16, lora_dropout=.25)
+        ques_peft_config = LoraConfig(inference_mode=False, r=4, lora_alpha=16, lora_dropout=.25)
         self.ques_model = get_peft_model(ques_model, ques_peft_config)
         self.ques_tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
         
