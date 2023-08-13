@@ -10,6 +10,7 @@ import os
 
 from datasets import load_dataset
 from transformers import DPRContextEncoder, DPRContextEncoderTokenizer, BertTokenizer
+from sentence_transformers import SentenceTransformer
 from rich.progress import track
 
 def process_chunks(facts: str, chunk_size: Optional[int]=100):
@@ -25,14 +26,15 @@ def process_chunks(facts: str, chunk_size: Optional[int]=100):
 def get_embeddings(chunks: List):
     """ Function to return the embeddings of the chunk. """
 
-    inputs = tokenizer(chunks, max_length=128, truncation=True,
-                       padding="max_length", return_tensors="pt").to(device)
+    # inputs = tokenizer(chunks, max_length=128, truncation=True,
+    #                    padding="max_length", return_tensors="pt").to(device)
     
-    with torch.no_grad():
-        cls_embedding = model(**inputs).pooler_output
-        cls_embedding = cls_embedding.detach().cpu().numpy()
+    # with torch.no_grad():
+    #     cls_embedding = model(**inputs).pooler_output
+    #     cls_embedding = cls_embedding.detach().cpu().numpy()
+    embedding = model.encode(chunks)
     
-    return cls_embedding
+    return embedding
     
 
 if __name__ == "__main__":
@@ -41,10 +43,11 @@ if __name__ == "__main__":
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     
-    tokenizer = DPRContextEncoderTokenizer.from_pretrained("facebook/dpr-ctx_encoder-single-nq-base")
-    model = DPRContextEncoder.from_pretrained("facebook/dpr-ctx_encoder-single-nq-base").to(device).eval()
+    # tokenizer = DPRContextEncoderTokenizer.from_pretrained("facebook/dpr-ctx_encoder-single-nq-base")
+    # model = DPRContextEncoder.from_pretrained("facebook/dpr-ctx_encoder-single-nq-base").to(device).eval()
+    model = SentenceTransformer("sentence-transformers/facebook-dpr-ctx_encoder-multiset-base").to(device).eval()
 
-    index = faiss.IndexHNSWFlat(768, 512, faiss.METRIC_INNER_PRODUCT)
+    index = faiss.IndexHNSWFlat(768, 32, faiss.METRIC_INNER_PRODUCT)
     
     with codecs.open("./data/wiki_simple.csv", "w", "utf-8") as fp:
         
